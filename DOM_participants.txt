@@ -1,0 +1,55 @@
+UserID	ParticipantID	Age	Group_Name	Languages	Languages_Other	Total_Errors	Total_Trials
+177dd91185f-6f4-1775-8274-9776	6347	26	3	Engels,Duits	NA	3	44
+177dd913503-13ae-497-28d6-a00b	14500	22	3	Ik spreek alleen Nederlands	NA	3	44
+177dd900d9e-75f8-19e1-e5f8-bd46	14713	20	4	Engels	NA	1	42
+177dd913637-3f54-5b9d-d214-c04	8532	28	4	Engels	NA	1	42
+177f22a55fb-c8b3-fcd4-8782-dca2	14611	27	5	Engels	NA	4	48
+177f22aab19-b9fe-3970-336c-2411	11079	23	5	Engels	NA	4	48
+177f22a25f2-5ec-6b80-52ff-9f5c	13277	22	6	Engels,Duits	NA	0	48
+177f22a6423-37c4-de13-1671-285c	13276	21	6	Engels,Duits,Frans	NA	0	48
+177fdc0c092-61ef-a8ff-df8-212f	2185	27	7	Engels	NA	1	45
+177fdc0cbc2-4886-fee8-6448-6bf	6520	27	7	Engels	NA	1	45
+177fdc0cb46-1587-5f63-904c-cecc	14394	23	8	Engels	NA	1	48
+177fdc22d45-ebae-95b2-396-84d4	12593	21	8	Engels	NA	1	48
+177fdb9d47b-eb7d-d499-cfaf-402c	11285	25	9	Engels	NA	0	48
+177fdc0c6b6-9033-1933-1735-ccc	14739	20	9	Engels	NA	0	48
+1780164f9cb-2ff8-f575-87fe-bbc0	13446	21	10	Engels	NA	0	48
+17801669e1d-c841-2a5d-986c-6ebf	11734	23	10	Engels	NA	0	48
+17801669bfa-e275-7ceb-fe92-6c74	14281	19	11	Engels,Duits,Frans	NA	0	48
+1780166c520-f332-ddc8-b542-f110	15022	24	11	Engels,Duits	NA	0	48
+17813515c24-ff74-d76b-b4d4-3fe8	8911	25	12	Engels	NA	1	48
+178135162f5-1686-6722-5865-6873	14659	28	12	Engels,Duits	NA	1	48
+178135181eb-1e56-634c-1190-93a6	4681	26	13	Engels	NA	0	48
+1781351c9cd-c12b-baa3-135-b71	12792	20	13	Engels	NA	0	48
+178373f5d57-b74b-a98d-854-a8d3	9280	25	14	Engels	NA	3	45
+1783742a9e9-a8b-e657-d7a-eace	11322	26	14	Engels,Duits,Frans	NA	3	45
+17849b3deb1-991b-5fe1-f0ba-711a	12644	21	15	Ik spreek alleen Nederlands	NA	8	48
+17849b68dab-710f-a845-6793-9d7e	14775	22	15	Engels	NA	8	48
+1785f998f13-a887-1b92-650e-f878	15050	22	16	Engels,Duits,Frans,Andere taal	Klein beetje Noors	0	48
+1785f99a63f-49f7-4db4-3758-b2a7	10171	24	16	Engels	NA	0	48
+1786d8ba59a-eb8e-7833-d254-dc4c	15083	20	17	Engels	NA	3	48
+1786d8bc61e-62a-f04a-ce87-258d	15075	21	17	Engels,Ik spreek alleen Nederlands	NA	3	48
+178825c4eb7-72b4-a373-c73c-d6e0	15100	18	18	Engels	NA	0	30
+178825c8e97-2a3e-3570-2b14-dd5	13558	20	18	Engels,Frans	NA	0	30
+1788481debd-59f5-a425-9e07-fa51	9993	24	19	Engels,Duits	NA	0	48
+178848ec441-858b-a1f2-fa18-a030	15070	27	19	Engels	NA	0	48
+178b6ed6df2-103b-883d-dc31-19da	7886	29	20	Engels,Duits,Frans	NA	0	48
+178b6eeeacd-d56e-449d-270a-131c	10339	24	20	Engels,Duits	NA	0	48
+1781712a7dc-a7cd-f2f2-b67b-8540	8474	25	21	Engels,Duits,Frans	NA	1	48
+17817134c2c-cd4c-f008-4d01-9b6b	3172	27	21	Engels	NA	1	48
+178185c6adb-1af3-9488-eaad-65ec	8667	25	22	Engels	NA	3	48
+178185c706e-401-6a0a-26ba-cf52	14682	24	22	Ik spreek alleen Nederlands	NA	3	48
+178185c724c-e6fa-3f44-4c37-ac7d	12918	21	23	Engels,Frans	NA	2	48
+178185d1576-2fde-ea0a-a0ff-7274	9778	26	23	Engels	NA	2	48
+17846b4cf50-443b-296e-ec46-5ed4	13762	22	24	Engels	NA	1	48
+17846b5b717-c1b1-2e85-49f4-16f1	8721	24	24	Engels	NA	1	48
+178cb885539-320a-7d53-cab2-d162	7291	25	26	Engels,Duits,Andere taal	Italiaans	3	36
+178cb88910c-18c8-e3f1-1324-607	14538	26	26	Engels	NA	3	36
+178ca3ed2a7-525d-e1db-4316-4d4d	14382	23	27	Engels	NA	1	48
+178ca3ed86a-62b0-7df-4f81-af92	7599	25	27	Engels,Duits,Frans	NA	1	48
+178cc63ec35-c7a5-2fee-12eb-4d32	9799	24	28	Engels	NA	1	48
+178cc63f2cd-d334-bcd5-c65e-cc97	10805	22	28	Engels,Duits	NA	1	48
+178da8c4717-d643-7599-733b-96cb	10163	25	29	Engels,Duits	NA	1	48
+178da8d73e4-c127-cf9e-613c-f93c	8258	26	29	Engels	NA	1	48
+178b680970a-2318-89ac-67e4-7776	10305	26	31	Engels	NA	0	48
+178b6810c86-2a49-3bc6-338c-d986	10494	24	31	Engels,Duits	NA	0	48

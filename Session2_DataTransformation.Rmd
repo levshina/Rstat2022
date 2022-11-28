@@ -1,0 +1,437 @@
+---
+title: "Session2_DataTransformation"
+author: "Natalia Levshina"
+date: '2022-11-22'
+output:
+  html_document: default
+editor_options: 
+  markdown: 
+    wrap: sentence
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(error = TRUE)
+options(scipen = 99999)
+```
+
+
+# Datasets
+
+My experiment involved an online communication game in two versions. In one version, the participants learned an artificial "alien" language with Differential Object Marking (DOM). In the other one, the language had Differential Subject Marking (DSM). The purpose of the experiment was to find out if the participants will use Object/Subject marking when it was most needed for disambiguation.
+
+We will use the following files:
+
+- DOM_responses.txt and DSM_responses.txt contain information about the trials and responses.
+
+- DOM_participants.txt & DSM_participants.txt contain information about the participants.
+
+- DOM_DSM_stimuli.txt contains information about the stimuli.
+
+### Load the datasets into R
+
+If we simply use read.table(), we have a problem:
+
+```{r}
+DOM_responses <- read.table("DOM_responses.txt", header = TRUE)
+#A tip: it is sometimes more convenient to choose the file interactively with file.choose(). 
+#DOM_responses <- read.table(file = file.choose(), header = TRUE)
+```
+
+Why? Check the "sep" (separator) argument.
+
+```{r}
+?read.table
+```
+
+A correction:
+
+```{r}
+DOM_responses <- read.table("DOM_responses.txt", header = TRUE, sep = "\t")
+head(DOM_responses)
+```
+
+### Check the structure of the data frame
+
+```{r}
+str(DOM_responses)
+```
+
+### Treat character vectors as factors
+
+
+```{r}
+DOM_responses <- read.table(file = "DOM_responses.txt", header = TRUE, sep = "\t", stringsAsFactors = TRUE)
+str(DOM_responses)
+```
+### Exercise
+
+Load the datasets with the DSM responses, DSM and DOM participants and the stimuli in the same way.
+
+Check which variables they contain. Do you understand their meaning?
+
+
+```{r include = FALSE}
+DSM_responses <- read.table(file = "DSM_responses.txt", header = TRUE, sep = "\t", stringsAsFactors = TRUE)
+DOM_participants <- read.table(file = "DOM_participants.txt", header = TRUE, sep = "\t", stringsAsFactors = TRUE)
+DSM_participants <- read.table(file = "DSM_participants.txt", header = TRUE, sep = "\t", stringsAsFactors = TRUE)
+stimuli <- read.table(file = "DSM_DOM_stimuli.txt", header = TRUE, sep = "\t", stringsAsFactors = TRUE)
+```
+
+
+# Our aim and goals
+
+Our global aim for today is to check and prepare the data for exploration and analysis. Our more specific goals are as follows:
+
+1. Sort the data for inspection.
+
+2. Remove the poorly performing participants, who might have been guessing randomly, and not truly communicating. 
+
+3. Put all information together in one data frame.
+
+4. Remove observations with ill-formed sentences and experimental fillers.
+
+5. Check if there are missing values.
+
+6. Replace some of the category names (aka factor levels) with more transparent ones.
+
+7. Write the data to a file.
+
+# Sorting data
+
+### Sorting a vector
+
+To sort one vector, you can use sort():
+
+```{r}
+#a numeric vector
+sort(DSM_participants$Age) #in ascending order
+sort(DSM_participants$Age, decreasing = TRUE) #in descending order
+#a character vector
+sort(DSM_responses$Text)[1:10] #in alphabetic order
+```
+
+### Sorting a data frame
+
+To sort data frames by a column in base R, use order():
+
+```{r}
+#a numeric vector
+DSM_participants[order(DSM_participants$Age), ][1:10, ] #in ascending order
+DSM_participants[order(-DSM_participants$Age), ][1:10, ] #in descending order
+```
+
+### Ordering data frames with dplyr
+
+The function arrange() in the package dplyr is more transparent, especially if you want to sort by many columns.
+
+```{r}
+library(dplyr) #you should have it installed already
+arrange(DSM_participants, Age)[1:10,] #in ascending order
+arrange(DSM_participants, Age, GroupName)[1:10,]
+```
+Can you guess how to sort by values in descending order?
+
+# Remove problematic observations
+
+I suspect that some of the participants guessed the pictures by chance. They were not trying to communicate. 
+In order to exclude them, we can use the binomial test in binom.test(). The test takes two arguments, the number of correct guesses and the number of trials. If the p-value is greater than 0.05, we cannot exclude the possibility that the guesses were random. 
+
+Let us do it for the first participant in DSM, to illustrate the principle.
+
+```{r}
+DSM_participants[1, ]
+binom.test(39, 42)
+```
+This does not look random!
+
+### Performing the binomial test
+
+We'll need to write a small function to get p-values of the binomial test.
+
+```{r}
+bt <- function(successes, trials){
+  binom.test(successes, trials)$p.value
+}
+pvals <- mapply(bt, DSM_participants$Trials_Correct, DSM_participants$Trials_Total)
+head(pvals)
+which(pvals >= 0.05)
+```
+
+Two participants (in one group) have p-values higher than or equal to 0.05. This means that we can suspect that they pressed the button randomly.
+
+### Removing participants
+
+Now we inspect the participants who might have guessed randomly and create a new data fame without them.
+
+```{r}
+DSM_participants[39:40, ]
+DSM_participants_clean <- DSM_participants[-c(39, 40),]
+```
+
+### Exercise
+
+Do the same for DOM. How many participants are removed?
+
+
+
+# Putting all information together
+
+It is time to put all data in one data frame. This is a challenge! First, we need to make sure that the columns contain the same information in both data frames.
+
+```{r}
+colnames(DSM_participants_clean)
+colnames(DOM_participants)
+```
+
+We need to transform Total_Errors in the DOM dataset to Trial_Correct. 
+
+```{r}
+DOM_participants$Trials_Correct <- DOM_participants$Total_Trials - DOM_participants$Total_Errors
+colnames(DOM_participants)
+```
+
+### Removing a column
+
+We do not need the number of errors anymore, so we can remove it.
+We also do not need (and now even may not keep legally!) ParticipantID.
+
+```{r}
+DOM_participants_clean <- DOM_participants[, -c(2, 7)]
+colnames(DOM_participants_clean)
+```
+
+### Reordering columns
+
+Now the problem is that the datasets have their columns in different order. If we want to reorder them, we can specify the column indices (here, 6 and 7) in the correct order. 
+
+```{r}
+DOM_participants_clean <- DOM_participants_clean[, c(1:5, 7, 6)]
+colnames(DOM_participants_clean)
+```
+
+### Putting rows together
+
+Now it's time to put the rows of the two data frames together. Let's try to do it with the help of rbind().
+
+```{r}
+participants <- rbind(DOM_participants_clean, DSM_participants_clean)
+```
+Oops, we need to make the column names the same. Let's make unified column names and change them in both data frames simultaneously.
+
+```{r}
+unified_colnames <- c("UserID", "Age", "Group_Name", "Foreign_Languages", "Foreign_Languages_Other", "Trials_Correct", "Trials_Total")
+colnames(DSM_participants_clean) <- colnames(DOM_participants_clean) <- unified_colnames
+```
+
+
+Now repeat the binding operation:
+
+```{r}
+participants <- rbind(DOM_participants_clean, DSM_participants_clean)
+dim(participants)
+```
+This seems to work. But this is not yet perfect. There is one caveat. Can you guess which one?
+
+### Specifying the experiment version
+
+We should first create the column with the experiment version (DSM or DOM).
+
+```{r}
+participants$Version <- c(rep("DOM", nrow(DOM_participants_clean)), 
+                              rep("DSM", nrow(DSM_participants_clean)))
+head(participants$Version)
+```
+### Pasting together the group name and version 
+
+```{r}
+participants$Version_Group <- paste(participants$Version, participants$Group_Name, sep = "_")
+head(participants$Version_Group)
+participants$Version_Group <- as.factor(participants$Version_Group)
+```
+
+Now there will be no confusion.
+
+### Exercise
+
+Put together the rows of the data frames with the responses. You can exclude first the Group information, because it will be available later. Change the name of columns "CorrectGuess" and "PreviousCorrect" in the DSM responses into "Correct_Guess" and "Previous_Correct", respectively.
+
+```{r, echo = FALSE}
+DOM_responses_clean <- DOM_responses[, -2]
+DSM_responses_clean <- DSM_responses[, -2]
+colnames(DSM_responses_clean)[10] <- "Correct_Guess"
+colnames(DSM_responses_clean)[11] <- "Previous_Correct"
+responses <- rbind(DOM_responses_clean, DSM_responses_clean)
+```
+
+### Add a column with the experiment version
+
+```{r}
+responses$Version <- c(rep("DOM", nrow(DOM_responses_clean)), 
+                         rep("DSM", nrow(DSM_responses_clean)))
+responses$Version <- as.factor(responses$Version)
+```
+
+### Merging data frames
+
+Now we are ready to put together all information in one dataset. Let's add the participants' information to the responses information. We use the function merge() to merge by UserID. We take all observations from both datasets (all = TRUE).
+
+
+```{r}
+responses_participants <- merge(responses, participants, by = "UserID", all = TRUE)
+dim(responses_participants)
+colnames(responses_participants)
+```
+
+### Removing duplicated columns 
+
+Some cleaning up...
+
+```{r}
+responses_participants <- responses_participants[, -19]
+colnames(responses_participants)[12] <- "Version"
+```
+
+### Merging: the second try
+
+Now add information about the stimuli, merging the dataframes by "StimulusID"
+
+```{r}
+data_all <- merge(responses_participants, stimuli, by = "StimulusID", all = TRUE)
+colnames(data_all)
+```
+
+# Cleaning the data
+### Remove fillers and bad responses
+
+```{r}
+nrow(data_all)
+summary(data_all$Stimulus_Type)
+summary(data_all$Correct_Form)
+data_all_clean <- data_all[data_all$Stimulus_Type != "Filler"&data_all$Correct_Form == "Yes",]
+nrow(data_all_clean)  
+data_all_clean$Stimulus_Type <- factor(data_all_clean$Stimulus_Type)
+```
+
+### Check missing values
+
+Finally, we need to check if there are the missing values in our future response variable, "Marker".
+
+```{r}
+data_all_clean[is.na(data_all_clean$Marker),]
+```
+No, there is nothing to worry about.
+
+### Exercise
+
+Find variables with missing values. What went wrong?
+
+# Changing factor levels
+
+We are not very happy with the names of levels in "Stimulus_Type". They could be more transparent! Let us change "AllDifferent" to "Different_Actions&Actors", "DifferentActions" to "Different_Actions", and "DifferentAP" to "Different_Actors". The safest way to edit factor levels is to transform the factor into a character vector, edit the values and turn it back into a factor.
+
+
+```{r}
+summary(data_all_clean$Stimulus_Type)
+data_all_clean$Stimulus_Type <- as.character(data_all_clean$Stimulus_Type)
+data_all_clean$Stimulus_Type[data_all_clean$Stimulus_Type == "AllDifferent"] <- "Different_Actions&Actors"
+data_all_clean$Stimulus_Type[data_all_clean$Stimulus_Type == "DifferentActions"] <- "Different_Actions"
+data_all_clean$Stimulus_Type[data_all_clean$Stimulus_Type == "DifferentAP"] <- "Different_Actors"
+data_all_clean$Stimulus_Type <- as.factor(data_all_clean$Stimulus_Type)
+summary(data_all_clean$Stimulus_Type)
+```
+
+# Writing a data frame to a file
+
+It is useful to save our data to a file, for reproducing and sharing.
+
+```{r}
+#to a tab-separated file
+write.table(data_all_clean, file = "DOM_DSM_tab.txt", sep = "\t", row.names = FALSE, quote = FALSE)
+#to a file with a semicolon for the separator 
+write.csv2(data_all_clean, file = "DOM_DSM_semicolon.csv", row.names = FALSE, quote = FALSE)
+```
+
+
+
+# A bonus: dealing with character strings
+
+### Splitting strings
+
+Let us split the sentences that the participants wrote in their responses, in order to see how many words they contain. We will need to turn the factor into a character vector first.
+
+```{r}
+
+head(data_all_clean$Text)
+data_all_clean$Text <- as.character(data_all_clean$Text)
+head(data_all_clean$Text)
+```
+
+```{r}
+
+sentence_split <- strsplit(data_all_clean$Text, split = " ")
+head(sentence_split) # a list!
+sentence_lengths <- lengths(sentence_split)
+head(sentence_lengths)
+table(sentence_lengths)
+```
+We see that most participants wrote three words, but some of them wrote one, two or even four.
+
+### Looking for nth elements within a list
+
+We can find the first word in every sentence by using lapply(). Next, we can flatten the list.
+
+```{r}
+first_word <- lapply(sentence_split, `[[`, 1)
+head(first_word)
+first_word <- unlist(first_word)
+head(first_word)
+```
+
+### Searching for strings
+
+We want to check if the marker "ke" is present in a sentence. To look for strings, one can use grep() and grepl(). The former returns a vector of indices of all matches. The latter returns a logical vector, whether every string has a match or not.
+
+First, you specify what to search for, then where to search for it.
+
+```{r}
+with_ke <- grep("ke", data_all_clean$Text)
+head(with_ke)
+length(with_ke)
+```
+
+Now with grepl():
+
+```{r}
+with_ke_logical <- grepl("ke", data_all_clean$Text)
+head(with_ke_logical)
+length(with_ke_logical)#all examples!
+table(with_ke_logical, data_all_clean$Marker)
+
+```
+
+You choose which method is more convenient for your task!
+What is going on?
+
+```{r}
+data_all_clean$Text[data_all_clean$Marker == "Yes"& with_ke_logical == FALSE]
+data_all_clean$Text[data_all_clean$Marker == "No"& with_ke_logical == TRUE]
+```
+
+
+### Substituting strings
+
+Imagine you want to replace "ke" with a capitalized version "KE" in all instances. You can use the function gsub(), which requires 1) the pattern you want to find, 2) its replacement, 3) where to search. It's best not to do this on the original data!
+
+```{r}
+
+head(data_all_clean$Text)
+new_sentences <- gsub("ke", "KE", data_all_clean$Text)
+head(new_sentences)
+```
+
+### Exercises
+
+1. How many sentences do NOT contain the names "mgana"? How many do NOT contain "tinga"? Tip: use ignore.case = TRUE. Check the sentences. What's the problem? 
+
+2. Try to normalize all instances of "mgana" using pattern matching and replacement.
