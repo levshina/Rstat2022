@@ -1,0 +1,307 @@
+---
+title: "Session3_BasicStatsPlots"
+author: "Natalia Levshina"
+date: '2022-12-02'
+output:
+  html_document: default
+editor_options: 
+  markdown: 
+    wrap: sentence
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(error = TRUE)
+options(scipen = 99999)
+```
+
+
+# Categorical variables
+
+Our dataframe contains many categorical variables ("Marker", "Verb_Position", "Version" and so on).
+
+```{r}
+load("data_all_clean.R")#if you don't have the most up-to-date version of the data, you can download it from https://github.com/levshina/Rstat2022
+str(data_all_clean)
+```
+
+What can we do with them?
+
+- Tabulate and cross-tabulate
+
+- Compute different types of proportions
+
+- Visualize with the help of pie charts, bar plots, mosaic plots, association plots
+
+- Test if there are any biases or associations between the variables the help of the binomial test, Chi-squared test, Fisher exact test, logistic regression, etc.
+
+- Search for patterns with the help of Correspondence Analysis
+
+
+## Research questions
+
+- How often do the participants use the case markers?
+
+- Do they use them more often in the DSM or DOM versions? 
+
+## Functions summary() and table()
+
+```{r}
+summary(data_all_clean$Marker)
+```
+```{r}
+table(data_all_clean$Marker)
+```
+What is the difference? If there are missing values (NA's), you will see them only in the summary. 
+
+```{r}
+summary(data_all_clean$Previous_Marker)
+table(data_all_clean$Previous_Marker)
+```
+## Proportions and percentages
+
+
+```{r}
+mytable <- table(data_all_clean$Marker)
+prop.table(mytable)
+myproptable <- prop.table(mytable)*100
+```
+
+## Bar plot
+
+We can create a bar plot with frequencies or proportions. The y-axis will be different.
+
+```{r}
+barplot(mytable)
+barplot(myproptable)
+```
+
+## Some modifications 
+
+
+```{r}
+barplot(mytable, main = "Frequency of marker use", names = c("No marker", "Marker"), col = "blue", xlab = "The use of marker", ylab = "Frequency")
+```
+
+For all graphical parameters, see ?par.
+
+
+## Pie chart
+
+No difference between frequencies and proportions.
+
+```{r}
+pie(mytable)
+pie(myproptable)
+```
+
+
+## Binomial test
+
+The binomial test can be used to test the null hypothesis that a bias towards one or the other outcome can be due to chance. If the p-value is less than 0.05, we can discard the null hypothesis. We need two numbers: successes (or failures) and the total number of cases.
+
+
+```{r}
+binom.test(x = 1720, n = 1720 + 530)
+```
+
+The tiny p-value suggests that the null hypothesis can be rejected. Participants in general avoid using the marker. 
+
+
+
+Caution: this example is provided only for illustration. We need a mixed-effects model with many factors to make correct inference about the baseline preference or avoidance of the markers. We'll get there in January.
+
+## Chi-squared test
+
+The Chi-squared test can be used to test the null hypothesis that the observed frequencies do not deviate from those expected by chance (in this case, 50/50). The test works with two and more categories.
+
+
+```{r}
+chisq.test(mytable)
+```
+"X-squared" is the test statistic (see below). "df" means the degrees of freedom. For two categories, it is 1. For three categories, it is 2, and so on.
+
+
+
+## Exercise
+
+Explore the position of the verb in the sentences produced by the participants (variable "Verb_Position"). What is the bias? Can it be due to chance (disregarding the other variables and dependencies between the data points, for the sake of exercise)?
+
+
+## Two categorical variables
+
+Let us check if there is an association between "Marker" and the experiment "Version".
+
+```{r}
+table(data_all_clean$Marker, data_all_clean$Version)
+```
+The proportions can be of three types: by rows, by columns and for every individual cell:
+
+```{r}
+mytable2 <- table(data_all_clean$Marker, data_all_clean$Version)
+#by rows
+prop.table(mytable2, 1)
+#by columns
+prop.table(mytable2, 2)
+#for every cell
+prop.table(mytable2)
+```
+Which of the proportion types is the most informative for the experiment?
+
+## Bar plot
+
+```{r}
+#stacked bars
+barplot(mytable2, col = c("blue", "lightblue"))
+#unstacked bars
+barplot(mytable2, col = c("blue", "lightblue"), beside = TRUE)
+#with a legend
+legend("topright", legend = levels(data_all_clean$Marker), fill = c("blue", "lightblue"))
+```
+
+You'll learn to do more plots in the next session with the package ggplot2.
+
+
+## Chi-squared test again
+
+```{r}
+chisq.test(mytable2)
+```
+
+The Chi-squared test has the null hypothesis that the squared differences between the observed and expected values are not different from 0. How to get the expected values?
+
+```{r}
+chisq.test(mytable2)$expected
+```
+
+
+## Association and mosaic plots
+
+```{r}
+assocplot(mytable2)
+mosaicplot(mytable2)
+```
+
+Association plots: if a bar "grows" about the baseline, the observed frequency is greater than the expected one. If it "hangs" from the baseline, the observed frequency is less than the expected one. The height represents the value of the Pearson residual. The width stands for the squared root of the expected value in the cell.
+
+Pearson residuals are the differences between the observed and expected frequencies divided by the squared root of the expected value. Basically, it's the contribution of a cell to the Chi-squared statistic, which is the sum of squared Pearson residuals.
+
+```{r}
+chisq.test(mytable2)$residuals
+```
+
+
+Mosaic plots: the size shows the proportion of the observations with the given values. If the residuals are larger than 2 or smaller than -2, they are shaded with blue (or red). In our example, the differences between the observed and expected values are between -2 and 2, which is too small.
+
+See more options in the function assoc() and mosaic() in the package vcd.
+
+## Fisher Exact Test
+
+If any of the EXPECTED values is less than 5, you should use the Fisher Exact Test.
+
+This is not the case here, but it's important to know how to perform it.
+
+```{r}
+fisher.test(mytable2)
+```
+
+More information about odds ratio (and log odds ratio) in January!
+
+## Exercise
+
+Work in groups. Choose any of these associations:
+
+a) the use of marker and the correct or incorrect guess,
+
+b) the use of marker and the position of the verb,
+
+c) the use of marker and the order of subject and object,
+
+d) the use of marker and the presence of the marker in the previous turn.
+
+Share your findings and visualizations with everyone!
+
+
+# Numeric variables
+
+In order to explore numeric variables, you can do the following:
+
+- get the basic statistics,
+
+- visualize the distribution in a box plot,
+
+- visualize the relationship between two variables in a scatter plot,
+
+- perform a correlation test between two variables, fit a linear regression model, and so on,
+
+- for multivariate data: explore patterns with the help of Principal Component Analysis, Factor Analysis, Multidimensional Scaling or cluster analysis.
+
+
+## Summary and basic statistics
+
+
+Let us look at the ages of the participants, using the participants dataframe. Again, summary() is great for the first evaluation.
+
+```{r}
+load("participants.R") # if you don't have the dataset, download it from https://github.com/levshina/Rstat2022
+summary(participants$Age)
+```
+
+Do you understand the meaning of these numbers?
+You can also get them one by one like this:
+
+```{r}
+#mininum
+min(participants$Age)
+#maximum
+max(participants$Age)
+#mean
+mean(participants$Age)
+#median
+median(participants$Age)
+#1st quartile
+quantile(participants$Age, 0.25)
+#3rd quartile
+quantile(participants$Age, 0.75)
+```
+
+## Box plot
+
+```{r}
+boxplot(participants$Age)
+```
+
+Do you understand what the box and and whiskers represent? What is the line in the centre?
+
+
+## Scatter plot
+
+```{r}
+plot(participants$Trials_Correct, participants$Trials_Total)
+```
+
+## Correlation test
+
+```{r}
+cor.test(participants$Trials_Correct, participants$Trials_Total)
+```
+
+This is the default coefficient, Pearson's r. It is used when the relationship is monotonic and linear. If the relationship is monotonic but non-linear, you can use method = "spearman" or method = "kendall".
+
+```{r}
+cor.test(participants$Trials_Correct, participants$Trials_Total, method = "spearman")
+```
+
+The correlation coefficient (r, rho or tau) show the strength of association between the variables. For more complex patterns, use variable transformations, regression with polynomials or generalized additive models. 
+
+## t-test
+
+The t-test tests the null hypothesis that the difference between the means of two groups is 0. For example, is there a difference between the mean number of correct responses in the DSM and DOM versions of the experiment?
+
+```{r}
+t.test(Trials_Correct ~ Version, data = participants)
+```
+
+Important: this is the formula method, which we will use a lot when we do regression analysis. The variable on the left from the tilde sign represents the response variable, and the variable on the right is the predictor.
+
+What is your conclusion, based on this data?
