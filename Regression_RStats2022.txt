@@ -1,0 +1,92 @@
+### Linear models
+
+cookies <- c(0, 3, 5, 7, 9, 10, 13, 16, 18, 20)
+gain <- c(-0.1, 0.4, -0.7, 1.7, 1.3, 0.2, 0.8, 2.5, 1.0, 2.8)
+
+plot(x = cookies, y = gain, xlab = "cookies per day", ylab = "weight gain, kg", pch = 12, col = "brown")
+
+lm(gain ~ cookies)
+
+xmas_lm <- lm(gain ~ cookies)
+summary(xmas_lm)
+
+fitted(xmas_lm)
+residuals(xmas_lm)
+cor(gain, cookies)^2
+
+xmas_data <- data.frame(n_cookies = cookies, weight_gain = gain) 
+xmas_lm <- lm(weight_gain ~ n_cookies, data = xmas_data)
+summary(xmas_lm)
+
+sports <- c("Yes", "No", "Yes", "No", "No", "Yes", "No", "No", "Yes", "No")
+sports <- as.factor(sports)
+boxplot(gain ~ sports)
+
+xmas_lm1 <- lm(gain ~ sports)
+summary(xmas_lm1)
+
+aggregate(gain ~ sports, FUN = mean)
+
+sports_sum <- sports
+contrasts(sports_sum) <- contr.sum
+contrasts(sports_sum)
+
+xmas_lm2 <- lm(gain ~ sports_sum)
+summary(xmas_lm2)
+
+gender <- c("M", "F", "D", "M", "F", "D")
+gender <- as.factor(gender)
+contrasts(gender)
+
+xmas_lm3 <- lm(gain ~ cookies + sports)
+summary(xmas_lm3)
+
+xmas_lm4 <- lm(gain ~ cookies*sports)
+xmas_lm4 <- lm(gain ~ cookies + sports + cookies:sports) #alternatively
+summary(xmas_lm4)
+
+anova(xmas_lm3, xmas_lm4)
+
+gender <- c("M", "F", "M", "F", "F", "F", "M", "F", "M", "M")
+xmas_lm5 <- lm(gain ~ cookies + sports + gender)
+summary(xmas_lm5)
+
+### Mixed-effects models
+
+Finland <- data.frame(Temperature = c(0, 3, 5, 10), Sales = c(650, 730, 910, 1000))
+Ireland <- data.frame(Temperature = c(5, 6, 12, 15), Sales = c(600, 770, 810, 890))
+Italy <- data.frame(Temperature = c(12, 15, 16, 20), Sales = c(420, 500, 720, 800))
+China <- data.frame(Temperature = c(17, 18, 22, 24), Sales  = c(300, 480, 500, 790))
+India <- data.frame(Temperature = c(22, 25, 26, 30), Sales = c(160, 180, 300, 510))
+
+icecream_data <- rbind(Finland, Ireland, Italy, China, India)
+icecream_data$Country <- c(rep("Finland", 4), rep("Ireland", 4), rep("Italy", 4), rep("China", 4), rep("India", 4)) 
+
+icecream_lm <- lm(Sales ~ Temperature, data = icecream_data)
+summary(icecream_lm)
+
+plot(Sales ~ Temperature, data = icecream_data)
+abline(icecream_lm, col = "red")
+
+plot(Sales ~ Temperature, col = as.numeric(as.factor(icecream_data$Country)), data = icecream_data, pch = 16)
+
+library(lme4)
+icecream_lmer <- lmer(Sales ~ (1|Country) + Temperature, data = icecream_data)
+summary(icecream_lmer)
+ranef(icecream_lmer)
+
+
+icecream_lmer1 <- lmer(Sales ~ (1 + Temperature|Country) + Temperature, data = icecream_data)
+anova(icecream_lmer, icecream_lmer1)
+
+library(MuMIn)
+r.squaredGLMM(icecream_lmer)
+
+
+load("data_all_clean.R")
+
+dm_glmer0 <- glmer(Marker ~ (1|Version_Group), data = data_all_clean, family = binomial) 
+dm_glmer1 <- glmer(Marker ~ (1|Version_Group) + Stimulus_Type, data = data_all_clean, family = binomial) 
+anova(dm_glmer0, dm_glmer1)
+
+summary(dm_glmer1)
